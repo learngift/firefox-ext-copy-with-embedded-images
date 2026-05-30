@@ -30,7 +30,7 @@ async function handleCopy() {
     }
   }));
 
-  copyHTMLToClipboard(container.innerHTML);
+  await copyHTMLToClipboard(container.innerHTML);
   showToast("✓ Copié avec " + imgs.length + " image(s) embarquée(s)");
 }
 
@@ -43,21 +43,14 @@ function blobToBase64(blob) {
   });
 }
 
-function copyHTMLToClipboard(html) {
-  const div = document.createElement('div');
-  div.style.cssText = 'position:fixed;opacity:0;pointer-events:none;top:0;left:0;z-index:-1';
-  div.contentEditable = 'true';
-  div.innerHTML = html;
-  document.body.appendChild(div);
-
-  const range = document.createRange();
-  range.selectNodeContents(div);
-  const sel = window.getSelection();
-  sel.removeAllRanges();
-  sel.addRange(range);
-  document.execCommand('copy');
-  sel.removeAllRanges();
-  document.body.removeChild(div);
+async function copyHTMLToClipboard(html) {
+  const plain = new DOMParser().parseFromString(html, 'text/html').body.innerText;
+  await navigator.clipboard.write([
+    new ClipboardItem({
+      'text/html': new Blob([html], { type: 'text/html' }),
+      'text/plain': new Blob([plain], { type: 'text/plain' }),
+    }),
+  ]);
 }
 
 function showToast(msg) {
